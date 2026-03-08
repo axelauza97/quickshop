@@ -1,3 +1,4 @@
-auth0-server-python>=1.0.0b7
-flask[async]>=2.0.0
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+PyJWT[crypto]>=2.8.0
 python-dotenv>=1.0.0
