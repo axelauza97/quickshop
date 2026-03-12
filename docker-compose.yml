@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-quickshop}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-quickshop}
+      POSTGRES_DB: ${POSTGRES_DB:-quickshop}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-quickshop} -d ${POSTGRES_DB:-quickshop}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    env_file:
+      - path: backend/.env
+        required: false
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://quickshop:quickshop@db:5432/quickshop}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000}
+      SEED_FIXTURES: ${SEED_FIXTURES:-true}
+
+  frontend:
+    build: ./frontend
+    env_file:
+      - path: frontend/.env.local
+        required: false
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+
+volumes:
+  pgdata:
