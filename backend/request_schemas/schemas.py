@@ -1,6 +1,3 @@
-from __future__ import annotations
-
-from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -8,18 +5,20 @@ from pydantic import BaseModel
 
 class CreateProductRequest(BaseModel):
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     price: float
     category_id: UUID
     stock: int = 0
+    image_url: str | None = None
 
 
 class UpdateProductRequest(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    price: Optional[float] = None
-    category_id: Optional[UUID] = None
-    stock: Optional[int] = None
+    name: str | None = None
+    description: str | None = None
+    price: float | None = None
+    category_id: UUID | None = None
+    stock: int | None = None
+    image_url: str | None = None
 
 
 class CreateCategoryRequest(BaseModel):
@@ -27,16 +26,12 @@ class CreateCategoryRequest(BaseModel):
 
 
 class UpdateCategoryRequest(BaseModel):
-    name: Optional[str] = None
-
-
-class CreateOrderRequest(BaseModel):
-    user_id: UUID
-    total_amount: float
+    name: str | None = None
 
 
 class UpdateOrderRequest(BaseModel):
-    total_amount: Optional[float] = None
+    total_amount: float | None = None
+    status: str | None = None
 
 
 class CreateOrderItemRequest(BaseModel):
@@ -47,9 +42,18 @@ class CreateOrderItemRequest(BaseModel):
 
 
 class UpdateOrderItemRequest(BaseModel):
-    quantity: Optional[int] = None
-    price_at_purchase: Optional[float] = None
+    quantity: int | None = None
+    price_at_purchase: float | None = None
 
 
-class UpdateUserRequest(BaseModel):
-    auth0_sub: Optional[str] = None
+class AddCartItemRequest(BaseModel):
+    product_id: UUID
+    quantity: int = 1
+
+
+class UpdateCartItemRequest(BaseModel):
+    quantity: int
+
+
+class CheckoutRequest(BaseModel):
+    shipping_address: str | None = None
