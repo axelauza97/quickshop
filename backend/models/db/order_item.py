@@ -19,7 +19,7 @@ class OrderItem(Base):
     )
     product_id = mapped_column(
         PSQL_UUID(as_uuid=True),
-        ForeignKey("product.id", ondelete="CASCADE"),
+        ForeignKey("product.id", ondelete="RESTRICT"),
         nullable=False,
     )
     quantity = mapped_column(Integer, nullable=False, default=0)
@@ -55,6 +55,11 @@ def list_order_items(
 
 def get_order_item_by_id(session: Session, order_item_id: UUID) -> "OrderItem | None":
     return session.scalar(select(OrderItem).where(OrderItem.id == order_item_id))
+
+
+def has_order_items_for_product(session: Session, product_id: UUID) -> bool:
+    stmt = select(OrderItem.id).where(OrderItem.product_id == product_id).limit(1)
+    return session.scalar(stmt) is not None
 
 
 def create_order_item(session: Session, values: dict) -> OrderItem:

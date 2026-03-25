@@ -57,6 +57,16 @@ class Order(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class PaginatedProducts(BaseModel):
+    items: list[Product]
+    total: int
+
+
+class PaginatedOrders(BaseModel):
+    items: list[Order]
+    total: int
+
+
 class CartItemResponse(BaseModel):
     id: UUID
     product_id: UUID

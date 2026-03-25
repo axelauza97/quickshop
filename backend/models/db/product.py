@@ -1,12 +1,13 @@
 import uuid
 from uuid import UUID
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, func, or_, select
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Select, func, or_, select
 from sqlalchemy.dialects.postgresql import UUID as PSQL_UUID
 from sqlalchemy.orm import Session, mapped_column, relationship, selectinload
 from sqlalchemy.sql.expression import text
 
 from .base import Base
+from .category import Category
 
 
 class Product(Base):
@@ -27,25 +28,23 @@ class Product(Base):
         DateTime(timezone=True), nullable=False, default=func.now()
     )
     category = relationship("Category", back_populates="products")
-    order_items = relationship("OrderItem", back_populates="product")
-    cart_items = relationship("CartItem", back_populates="product")
+    # Let the database enforce product delete rules so SQLAlchemy does not try
+    # to null out non-nullable product_id foreign keys first.
+    order_items = relationship(
+        "OrderItem", back_populates="product", passive_deletes="all"
+    )
+    cart_items = relationship(
+        "CartItem", back_populates="product", passive_deletes="all"
+    )
 
 
-def list_products(
-    session: Session,
+def _apply_product_filters(
+    stmt: Select,
+    *,
     product_id: UUID | None = None,
     category_id: UUID | None = None,
     search: str | None = None,
-    skip: int = 0,
-    limit: int = 20,
-    load_category: bool = False,
-    load_order_items: bool = False,
-) -> list[Product]:
-    stmt = select(Product)
-    if load_category:
-        stmt = stmt.options(selectinload(Product.category))
-    if load_order_items:
-        stmt = stmt.options(selectinload(Product.order_items))
+) -> Select:
     if product_id is not None:
         stmt = stmt.where(Product.id == product_id)
     if category_id is not None:
@@ -55,8 +54,60 @@ def list_products(
         stmt = stmt.where(
             or_(Product.name.ilike(pattern), Product.description.ilike(pattern))
         )
+    return stmt
+
+
+def _apply_product_sort(stmt: Select, *, sort_by: str, order: str) -> Select:
+    sort_column = {
+        "name": Product.name,
+        "category": Category.name,
+        "price": Product.price,
+        "stock": Product.stock,
+        "created_at": Product.created_at,
+    }[sort_by]
+    if sort_by == "category":
+        stmt = stmt.outerjoin(Category, Product.category_id == Category.id)
+    direction = sort_column.desc() if order == "desc" else sort_column.asc()
+    tie_breaker = Product.id.desc() if order == "desc" else Product.id.asc()
+    return stmt.order_by(direction, tie_breaker)
+
+
+def list_products(
+    session: Session,
+    product_id: UUID | None = None,
+    category_id: UUID | None = None,
+    search: str | None = None,
+    skip: int = 0,
+    limit: int = 20,
+    sort_by: str = "name",
+    order: str = "asc",
+    load_category: bool = False,
+    load_order_items: bool = False,
+) -> tuple[list[Product], int]:
+    stmt = select(Product)
+    if load_category:
+        stmt = stmt.options(selectinload(Product.category))
+    if load_order_items:
+        stmt = stmt.options(selectinload(Product.order_items))
+    stmt = _apply_product_filters(
+        stmt,
+        product_id=product_id,
+        category_id=category_id,
+        search=search,
+    )
+    stmt = _apply_product_sort(stmt, sort_by=sort_by, order=order)
     stmt = stmt.offset(skip).limit(limit)
-    return session.scalars(stmt).all()
+
+    count_stmt = _apply_product_filters(
+        select(func.count(Product.id)),
+        product_id=product_id,
+        category_id=category_id,
+        search=search,
+    )
+
+    items = session.scalars(stmt).all()
+    total = session.scalar(count_stmt) or 0
+    return items, total
 
 
 def get_product_by_id(session: Session, product_id: UUID) -> Product | None:
@@ -98,3 +149,4 @@ def update_product(
 
 def delete_product(session: Session, product: Product) -> None:
     session.delete(product)
+    session.flush()

@@ -1,9 +1,10 @@
+from typing import Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
-from auth import get_current_user, require_permission
+from auth import require_permission
 from models.db.session import get_session
 from request_schemas.schemas import (
     CheckoutRequest,
@@ -11,21 +12,29 @@ from request_schemas.schemas import (
     UpdateOrderItemRequest,
     UpdateOrderRequest,
 )
-from response_schemas.schemas import CheckoutResponse, Order, OrderItem
+from response_schemas.schemas import CheckoutResponse, Order, OrderItem, PaginatedOrders
 from services import checkout_service, order_service
 
 router = APIRouter(tags=["orders"])
 
-
-# --- Orders ---
-
-
-@router.get("/orders", response_model=list[Order])
+@router.get("/orders", response_model=PaginatedOrders)
 def list_orders(
+    sort_by: Literal["created_at", "total_amount", "status"] = "created_at",
+    order: Literal["asc", "desc"] = "desc",
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, ge=1, le=100),
     user: dict = Depends(require_permission("read:order")),
     session: Session = Depends(get_session),
 ):
-    return order_service.list_orders(session, user)
+    items, total = order_service.list_orders(
+        session,
+        user,
+        sort_by=sort_by,
+        order=order,
+        skip=skip,
+        limit=limit,
+    )
+    return {"items": items, "total": total}
 
 
 @router.get("/orders/{order_id}", response_model=Order)
