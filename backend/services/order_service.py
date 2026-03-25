@@ -16,14 +16,41 @@ from request_schemas.schemas import (
 VALID_ORDER_STATUSES = {"pending", "confirmed", "shipped", "delivered", "cancelled"}
 
 
-def list_orders(session: Session, current_user: dict):
+def list_orders(
+    session: Session,
+    current_user: dict,
+    sort_by: str = "created_at",
+    order: str = "desc",
+    skip: int = 0,
+    limit: int = 100,
+):
     if current_user["role"] == "admin":
-        return order_repo.list_orders(session, load_items=True)
-    return order_repo.list_orders(session, user_id=current_user["id"], load_items=True)
+        return order_repo.list_orders(
+            session,
+            load_items=True,
+            sort_by=sort_by,
+            order=order,
+            skip=skip,
+            limit=limit,
+        )
+    return order_repo.list_orders(
+        session,
+        user_id=current_user["id"],
+        load_items=True,
+        sort_by=sort_by,
+        order=order,
+        skip=skip,
+        limit=limit,
+    )
 
 
 def get_order(session: Session, order_id: UUID, current_user: dict):
-    orders = order_repo.list_orders(session, order_id=order_id, load_items=True)
+    orders, _ = order_repo.list_orders(
+        session,
+        order_id=order_id,
+        load_items=True,
+        limit=1,
+    )
     order = orders[0] if orders else None
     if order is None:
         raise HTTPException(status_code=404, detail="Order not found")

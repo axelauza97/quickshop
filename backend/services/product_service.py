@@ -1,11 +1,17 @@
 from uuid import UUID
 
 from fastapi import HTTPException
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from models.db import category as category_repo
+from models.db import order_item as order_item_repo
 from models.db import product as product_repo
 from request_schemas.schemas import CreateProductRequest, UpdateProductRequest
+
+PRODUCT_DELETE_BLOCKED_MESSAGE = (
+    "This product can't be deleted because it is part of an existing order."
+)
 
 
 def list_products(
@@ -14,9 +20,17 @@ def list_products(
     category_id: UUID | None = None,
     skip: int = 0,
     limit: int = 20,
+    sort_by: str = "name",
+    order: str = "asc",
 ):
     return product_repo.list_products(
-        session, search=search, category_id=category_id, skip=skip, limit=limit
+        session,
+        search=search,
+        category_id=category_id,
+        skip=skip,
+        limit=limit,
+        sort_by=sort_by,
+        order=order,
     )
 
 
@@ -62,5 +76,17 @@ def delete_product(session: Session, product_id: UUID) -> dict:
     product = product_repo.get_product_by_id(session, product_id)
     if product is None:
         raise HTTPException(status_code=404, detail="Product not found")
-    product_repo.delete_product(session, product)
+
+    if order_item_repo.has_order_items_for_product(session, product_id):
+        raise HTTPException(status_code=409, detail=PRODUCT_DELETE_BLOCKED_MESSAGE)
+
+    try:
+        product_repo.delete_product(session, product)
+    except IntegrityError as exc:
+        session.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail=PRODUCT_DELETE_BLOCKED_MESSAGE,
+        ) from exc
+
     return {"deleted": True, "id": str(product_id)}
