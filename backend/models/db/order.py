@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session, mapped_column, relationship, selectinload
 from sqlalchemy.sql.expression import text
 
 from .base import Base
+from .order_item import OrderItem
 
 
 class Order(Base):
@@ -65,7 +66,9 @@ def list_orders(
 ) -> tuple[list[Order], int]:
     stmt = select(Order)
     if load_items:
-        stmt = stmt.options(selectinload(Order.order_items))
+        stmt = stmt.options(
+            selectinload(Order.order_items).selectinload(OrderItem.product)
+        )
     stmt = _apply_order_filters(stmt, user_id=user_id, order_id=order_id)
     stmt = _apply_order_sort(stmt, sort_by=sort_by, order=order)
     stmt = stmt.offset(skip).limit(limit)

@@ -39,6 +39,7 @@ class OrderItem(BaseModel):
     id: UUID
     order_id: UUID
     product_id: UUID
+    product_name: str
     quantity: int
     price_at_purchase: float
     created_at: datetime

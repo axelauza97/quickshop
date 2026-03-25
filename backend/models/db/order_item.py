@@ -30,6 +30,11 @@ class OrderItem(Base):
     order = relationship("Order", back_populates="order_items")
     product = relationship("Product", back_populates="order_items")
 
+    @property
+    def product_name(self) -> str:
+        product = self.product
+        return product.name
+
 
 def list_order_items(
     session: Session,
