@@ -23,12 +23,12 @@ import {
 } from "@mui/material";
 import { Snackbar, Alert } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import { getProducts, getCategories } from "./services/product-service";
-import { addToCart } from "./services/cart-service";
-import type { Product, Category } from "./services/types";
 import { useAuth0 } from "@auth0/auth0-react";
-import { useAccessToken } from "./auth/useAccessToken";
-import { useCart } from "./cart-context";
+import { useAccessToken } from "@/auth/useAccessToken";
+import { useCart } from "@/cart-context";
+import { addToCart } from "@/services/cart-service";
+import { getProducts, getCategories } from "@/services/product-service";
+import type { Product, Category } from "@/services/types";
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");

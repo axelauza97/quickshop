@@ -4,10 +4,10 @@ import { createContext, useContext, useState, useEffect, useCallback } from "rea
 import type { PropsWithChildren } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { Alert, Snackbar } from "@mui/material";
-import { useAccessToken } from "./auth/useAccessToken";
-import { getCart, removeCartItem } from "./services/cart-service";
-import type { CartItem } from "./services/types";
-import { getErrorMessage } from "./utils/error-helpers";
+import { useAccessToken } from "@/auth/useAccessToken";
+import { getCart, removeCartItem } from "@/services/cart-service";
+import type { CartItem } from "@/services/types";
+import { getErrorMessage } from "@/utils/error-helpers";
 
 interface CartContextValue {
   cartCount: number;

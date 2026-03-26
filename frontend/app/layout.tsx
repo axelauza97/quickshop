@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import "./globals.css";
-import Auth0ProviderWithConfig from "./auth0-provider";
-import MuiThemeProvider from "./theme-provider";
-import AppBarNav from "./app-bar-nav";
-import { CartProvider } from "./cart-context";
+import "@/globals.css";
+import Auth0ProviderWithConfig from "@/auth0-provider";
+import MuiThemeProvider from "@/theme-provider";
+import AppBarNav from "@/app-bar-nav";
+import { CartProvider } from "@/cart-context";
 
 export const metadata: Metadata = {
   title: "QuickShop",

@@ -19,9 +19,9 @@ import {
   ShoppingCart as ShoppingCartIcon,
   Storefront as StorefrontIcon,
 } from "@mui/icons-material";
-import { useAccessToken } from "./auth/useAccessToken";
-import { getCurrentUser } from "./services/user-service";
-import { useCart } from "./cart-context";
+import { useAccessToken } from "@/auth/useAccessToken";
+import { getCurrentUser } from "@/services/user-service";
+import { useCart } from "@/cart-context";
 
 export default function AppBarNav() {
   const router = useRouter();
