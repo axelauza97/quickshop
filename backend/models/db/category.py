@@ -64,3 +64,4 @@ def update_category(
 
 def delete_category(session: Session, category: Category) -> None:
     session.delete(category)
+    session.flush()
