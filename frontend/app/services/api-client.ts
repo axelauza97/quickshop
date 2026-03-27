@@ -24,7 +24,7 @@ export async function apiClient<T>(
   }
 
   const [pathname, query] = path.split("?");
-  const normalizedPath = pathname.endsWith("/") ? pathname : `${pathname}/`;
+  const normalizedPath = pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
   const url = `${API_URL}${normalizedPath}${query ? `?${query}` : ""}`;
 
   const res = await fetch(url, {
