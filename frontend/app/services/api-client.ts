@@ -1,4 +1,7 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || "").replace(
+  /^http:\/\//,
+  "https://"
+);
 
 export class ApiError extends Error {
   constructor(
@@ -23,9 +26,7 @@ export async function apiClient<T>(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const [pathname, query] = path.split("?");
-  const normalizedPath = pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
-  const url = `${API_URL}${normalizedPath}${query ? `?${query}` : ""}`;
+  const url = `${API_URL}${path}`;
 
   const res = await fetch(url, {
     ...options,
