@@ -6,5 +6,5 @@ export async function getCurrentUser(token: string): Promise<User> {
 }
 
 export async function getUsers(token: string): Promise<User[]> {
-  return apiClient<User[]>("/users", {}, token);
+  return apiClient<User[]>("/users/", {}, token);
 }

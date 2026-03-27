@@ -21,7 +21,7 @@ export async function getProducts(params?: {
   if (params?.order) query.set("order", params.order);
 
   const qs = query.toString();
-  return apiClient<PaginatedProducts>(`/products${qs ? `?${qs}` : ""}`);
+  return apiClient<PaginatedProducts>(`/products/${qs ? `?${qs}` : ""}`);
 }
 
 export async function getProduct(id: string): Promise<Product> {
@@ -29,5 +29,5 @@ export async function getProduct(id: string): Promise<Product> {
 }
 
 export async function getCategories(): Promise<Category[]> {
-  return apiClient<Category[]>("/categories");
+  return apiClient<Category[]>("/categories/");
 }

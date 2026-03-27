@@ -2,7 +2,7 @@ import { apiClient } from "@/services/api-client";
 import type { CartResponse, CartItem } from "@/services/types";
 
 export async function getCart(token: string): Promise<CartResponse> {
-  return apiClient<CartResponse>("/cart", {}, token);
+  return apiClient<CartResponse>("/cart/", {}, token);
 }
 
 export async function addToCart(
@@ -37,5 +37,5 @@ export async function removeCartItem(
 }
 
 export async function clearCart(token: string): Promise<void> {
-  await apiClient("/cart", { method: "DELETE" }, token);
+  await apiClient("/cart/", { method: "DELETE" }, token);
 }

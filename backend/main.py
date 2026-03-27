@@ -38,7 +38,7 @@ async def lifespan(app: FastAPI):
 
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 
-app = FastAPI(title="QuickShop API", lifespan=lifespan, redirect_slashes=False)
+app = FastAPI(title="QuickShop API", lifespan=lifespan)
 
 
 @app.exception_handler(IntegrityError)

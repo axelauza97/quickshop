@@ -16,7 +16,7 @@ export async function createProduct(
   data: CreateProductRequest
 ): Promise<Product> {
   return apiClient<Product>(
-    "/products",
+    "/products/",
     { method: "POST", body: JSON.stringify(data) },
     token
   );
@@ -48,7 +48,7 @@ export async function createCategory(
   data: CreateCategoryRequest
 ): Promise<Category> {
   return apiClient<Category>(
-    "/categories",
+    "/categories/",
     { method: "POST", body: JSON.stringify(data) },
     token
   );
